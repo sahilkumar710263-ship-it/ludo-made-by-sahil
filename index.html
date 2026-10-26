@@ -1,0 +1,853 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Ludo by Sahil</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: brand bar on top, board left, control panel right (stacks on phones), credit footer.
+   Palette: ink-navy neutrals, the four classic Ludo hues, one indigo accent for actions. */
+:root {
+  --font-display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bg: #eceff7;
+  --surface: #ffffff;
+  --ink: #131a36;
+  --muted: #5b6485;
+  --line: #d6dcec;
+  --accent: #3b39d4;
+  --on-accent: #ffffff;
+  --frame: #131a36;
+  --board: #ffffff;
+  --cell: #ffffff;
+  --cell-line: #c8d0e6;
+  --yard: #ffffff;
+  --star: #131a36;
+  --ring: #131a36;
+  --tok-edge: rgba(19, 26, 54, 0.55);
+  --die: #ffffff;
+  --pip: #131a36;
+  --shadow: rgba(19, 26, 54, 0.2);
+  --c0: #e4363f;
+  --c1: #27a24a;
+  --c2: #f2b705;
+  --c3: #2a6df0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1127;
+    --surface: #151c3a;
+    --ink: #eef1ff;
+    --muted: #9aa4cc;
+    --line: #2a3460;
+    --accent: #9a9cff;
+    --on-accent: #0c1127;
+    --frame: #05081a;
+    --board: #1a2246;
+    --cell: #212b58;
+    --cell-line: #36437e;
+    --yard: #0f1535;
+    --star: #eef1ff;
+    --ring: #ffffff;
+    --tok-edge: rgba(5, 8, 26, 0.85);
+    --die: #f4f6ff;
+    --pip: #131a36;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --c0: #ff5a63;
+    --c1: #35c45e;
+    --c2: #ffc933;
+    --c3: #5b93ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1127;
+  --surface: #151c3a;
+  --ink: #eef1ff;
+  --muted: #9aa4cc;
+  --line: #2a3460;
+  --accent: #9a9cff;
+  --on-accent: #0c1127;
+  --frame: #05081a;
+  --board: #1a2246;
+  --cell: #212b58;
+  --cell-line: #36437e;
+  --yard: #0f1535;
+  --star: #eef1ff;
+  --ring: #ffffff;
+  --tok-edge: rgba(5, 8, 26, 0.85);
+  --die: #f4f6ff;
+  --pip: #131a36;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --c0: #ff5a63;
+  --c1: #35c45e;
+  --c2: #ffc933;
+  --c3: #5b93ff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 24px;
+}
+h1, h2, h3, p, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+button { font: inherit; color: inherit; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.app { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+/* brand */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo { width: 42px; height: 42px; flex: none; }
+.word { font-family: var(--font-display); font-weight: 800; font-size: 32px; letter-spacing: -0.025em; line-height: 1; }
+.by {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 999px; background: var(--ink); color: var(--bg); white-space: nowrap;
+}
+
+.btn {
+  appearance: none; border: 0; cursor: pointer; font-weight: 700; font-size: 15px;
+  padding: 11px 18px; border-radius: 12px; background: var(--accent); color: var(--on-accent);
+  transition: transform 0.12s, opacity 0.12s;
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.btn.ghost:hover:not(:disabled) { border-color: var(--ink); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* stage */
+.stage { display: grid; grid-template-columns: minmax(0, 640px) minmax(280px, 380px); gap: 24px; justify-content: center; align-items: start; }
+.board-wrap { background: var(--frame); padding: 8px; border-radius: 22px; box-shadow: 0 12px 32px var(--shadow); }
+#board { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 14px; background: var(--board); touch-action: manipulation; }
+
+.yard.off { opacity: 0.35; }
+.glow { opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.glow.on { opacity: 0.24; }
+
+.tok { pointer-events: none; transition: transform 0.14s linear; }
+.tok.back { transition-duration: 0.55s; }
+.tok .body { transition: transform 0.15s; }
+.tok .ring { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.tok.can { pointer-events: auto; cursor: pointer; }
+.tok.can .ring { opacity: 1; animation: pulse 0.8s ease-in-out infinite alternate; }
+.tok:focus { outline: none; }
+.tok:focus-visible .ring { opacity: 1; }
+.nt .tok, .nt .tok .body { transition: none !important; }
+@keyframes pulse { from { transform: scale(0.92); } to { transform: scale(1.14); } }
+
+/* panel */
+.panel {
+  --cur: var(--c0);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+  padding: 20px; display: flex; flex-direction: column; gap: 18px; min-width: 0;
+}
+.turn { display: flex; align-items: center; gap: 10px; }
+.chipdot { width: 16px; height: 16px; border-radius: 50%; background: var(--cur); flex: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--cur) 25%, transparent); }
+.turn h2 { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -0.015em; text-wrap: balance; }
+.status { color: var(--muted); min-height: 2.9em; margin-top: -8px; }
+
+.dice-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.die {
+  appearance: none; cursor: pointer; width: 80px; height: 80px; flex: none; padding: 12px;
+  border-radius: 20px; background: var(--die); border: 5px solid var(--cur);
+  display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+  box-shadow: 0 6px 14px var(--shadow);
+}
+.die:disabled { cursor: default; }
+.die i { display: block; width: 100%; height: 100%; border-radius: 50%; background: transparent; place-self: center; max-width: 13px; max-height: 13px; }
+.die i.on { background: var(--pip); }
+.die.idle i.on { opacity: 0.3; }
+.die.rolling { animation: tumble 0.28s ease-in-out infinite alternate; }
+@keyframes tumble { from { transform: rotate(-9deg) scale(1.02); } to { transform: rotate(11deg) scale(1.08); } }
+.dice-row .btn { flex: 1; min-width: 150px; }
+
+.plist { display: flex; flex-direction: column; gap: 4px; }
+.p { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; }
+.p.on { background: color-mix(in srgb, var(--pc) 17%, transparent); }
+.p .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--pc); flex: none; }
+.p .pn { font-weight: 600; flex: 1; min-width: 0; }
+.p .pn small { margin-left: 8px; font-weight: 500; font-size: 12px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.p .home { display: flex; gap: 4px; }
+.p .home i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--pc); }
+.p .home i.f { background: var(--pc); }
+
+h3 { font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.log { display: flex; flex-direction: column; gap: 6px; font-size: 14px; min-height: 5.6em; }
+.log li { display: flex; gap: 8px; align-items: baseline; }
+.log .ld { width: 8px; height: 8px; border-radius: 50%; background: var(--pc, var(--muted)); flex: none; translate: 0 -1px; }
+.log li:not(:first-child) { color: var(--muted); }
+
+.rules { border-top: 1px solid var(--line); padding-top: 14px; }
+.rules summary { cursor: pointer; font-weight: 700; }
+.rules ul { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; }
+
+.foot {
+  display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap;
+  color: var(--muted); font-size: 13px; padding-top: 14px; border-top: 1px solid var(--line);
+}
+.foot strong { color: var(--ink); font-family: var(--font-display); font-size: 15px; letter-spacing: -0.01em; }
+
+/* overlays */
+.scrim {
+  position: fixed; inset: 0; z-index: 20; display: flex; overflow-y: auto;
+  background: rgba(8, 12, 30, 0.62);
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.sheet {
+  margin: auto; width: min(100%, 470px); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 24px; padding: 26px; display: flex; flex-direction: column; gap: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+.hero { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.hero .logo { width: 58px; height: 58px; }
+.hero .word { font-size: 48px; }
+.tag { color: var(--muted); font-size: 16px; text-wrap: balance; }
+.sheet h2 { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { appearance: none; cursor: pointer; border: 1.5px solid var(--line); background: transparent; border-radius: 999px; padding: 7px 13px; font-size: 14px; font-weight: 600; }
+.chip:hover { border-color: var(--ink); }
+.seats { display: flex; flex-direction: column; gap: 10px; }
+.seat { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.seat .sw { width: 22px; height: 22px; border-radius: 50%; background: var(--pc); flex: none; }
+.seat .sn { font-weight: 700; flex: 1; min-width: 70px; }
+.seg { display: flex; border: 1.5px solid var(--line); border-radius: 12px; overflow: hidden; }
+.seg label { position: relative; cursor: pointer; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; padding: 8px 15px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.seg input:checked + span { background: var(--ink); color: var(--bg); }
+.seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: -3px; }
+.err { color: var(--c0); font-weight: 600; font-size: 14px; min-height: 1.3em; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.actions .btn { flex: 1; min-width: 130px; }
+.credit { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+.credit strong { color: var(--ink); }
+.winmark { width: 64px; height: 64px; border-radius: 50%; background: var(--pc); box-shadow: 0 0 0 8px color-mix(in srgb, var(--pc) 25%, transparent); }
+
+@media (max-width: 900px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .board-wrap { max-width: 640px; width: 100%; margin: 0 auto; }
+  .panel { max-width: 640px; width: 100%; margin: 0 auto; }
+  .word { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tok, .tok .body { transition-duration: 0.01s !important; }
+  .tok.can .ring, .die.rolling { animation: none; }
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="39" height="39" rx="11" fill="var(--frame)" stroke="var(--line)"/>
+        <circle cx="13.5" cy="13.5" r="4.6" fill="var(--c0)"/>
+        <circle cx="26.5" cy="13.5" r="4.6" fill="var(--c1)"/>
+        <circle cx="26.5" cy="26.5" r="4.6" fill="var(--c2)"/>
+        <circle cx="13.5" cy="26.5" r="4.6" fill="var(--c3)"/>
+      </svg>
+      <span class="word">Ludo</span>
+      <span class="by">by Sahil</span>
+    </div>
+    <button class="btn ghost" id="newBtn" type="button">New game</button>
+  </header>
+
+  <main class="stage">
+    <section class="board-col">
+      <div class="board-wrap">
+        <svg id="board" viewBox="0 0 15 15" role="img" aria-label="Ludo board"></svg>
+      </div>
+    </section>
+
+    <aside class="panel" id="panel">
+      <div class="turn">
+        <span class="chipdot" id="chipDot"></span>
+        <h2 id="turnName">Ready to play</h2>
+      </div>
+      <p class="status" id="status" aria-live="polite">Choose who is playing to begin.</p>
+
+      <div class="dice-row">
+        <button class="die idle" id="die" type="button" aria-label="Roll the die" disabled>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </button>
+        <button class="btn" id="rollBtn" type="button" disabled>Roll the die</button>
+      </div>
+
+      <ul class="plist" id="plist" aria-label="Players"></ul>
+
+      <div>
+        <h3>Recent moves</h3>
+        <ul class="log" id="log"></ul>
+      </div>
+
+      <details class="rules">
+        <summary>How to play</summary>
+        <ul>
+          <li>Roll a 6 to bring a token out of its yard.</li>
+          <li>Move a token the number shown on the die. Land on a rival token to send it back to its yard.</li>
+          <li>Stars and coloured start squares are safe. No captures there.</li>
+          <li>Reach the centre with an exact roll.</li>
+          <li>A six, a capture, or reaching the centre gives another roll. Three sixes in a row lose the turn.</li>
+          <li>The first player to bring all four tokens home wins.</li>
+        </ul>
+      </details>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <span>Developed by <strong>Sahil</strong></span>
+    <span>Ludo &middot; 2026</span>
+  </footer>
+</div>
+
+<div class="scrim" id="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+  <div class="sheet">
+    <div class="hero">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="39" height="39" rx="11" fill="var(--frame)" stroke="var(--line)"/>
+        <circle cx="13.5" cy="13.5" r="4.6" fill="var(--c0)"/>
+        <circle cx="26.5" cy="13.5" r="4.6" fill="var(--c1)"/>
+        <circle cx="26.5" cy="26.5" r="4.6" fill="var(--c2)"/>
+        <circle cx="13.5" cy="26.5" r="4.6" fill="var(--c3)"/>
+      </svg>
+      <h1 class="word" id="setupTitle">Ludo</h1>
+      <span class="by">by Sahil</span>
+    </div>
+    <p class="tag">Roll a six, leave the yard, and get all four tokens home first.</p>
+    <div>
+      <h3>Quick setup</h3>
+      <div class="presets" id="presets"></div>
+    </div>
+    <div>
+      <h3>Players</h3>
+      <div class="seats" id="seats"></div>
+    </div>
+    <p class="err" id="err" role="alert"></p>
+    <div class="actions">
+      <button class="btn" id="startBtn" type="button">Start game</button>
+      <button class="btn ghost" id="resumeBtn" type="button" hidden>Back to game</button>
+    </div>
+    <p class="credit">Ludo grew out of Pachisi, played in India for over a thousand years. Developed by <strong>Sahil</strong>.</p>
+  </div>
+</div>
+
+<div class="scrim" id="win" role="dialog" aria-modal="true" aria-labelledby="winTitle" hidden>
+  <div class="sheet" id="winSheet">
+    <span class="winmark"></span>
+    <h2 id="winTitle" style="font-size:32px">Red wins</h2>
+    <p class="tag" id="winText"></p>
+    <div class="actions">
+      <button class="btn" id="againBtn" type="button">Play again</button>
+      <button class="btn ghost" id="changeBtn" type="button">Change players</button>
+    </div>
+    <p class="credit">Thanks for playing. Developed by <strong>Sahil</strong>.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  var $ = function (s) { return document.querySelector(s); };
+  function S(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- board geometry ---------- */
+  var NAMES = ['Red', 'Green', 'Yellow', 'Blue'];
+  var TRACK = [
+    [1,6],[2,6],[3,6],[4,6],[5,6],[6,5],[6,4],[6,3],[6,2],[6,1],[6,0],[7,0],[8,0],
+    [8,1],[8,2],[8,3],[8,4],[8,5],[9,6],[10,6],[11,6],[12,6],[13,6],[14,6],[14,7],[14,8],
+    [13,8],[12,8],[11,8],[10,8],[9,8],[8,9],[8,10],[8,11],[8,12],[8,13],[8,14],[7,14],[6,14],
+    [6,13],[6,12],[6,11],[6,10],[6,9],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8],[0,7],[0,6]
+  ];
+  var HOMECOL = [
+    [[1,7],[2,7],[3,7],[4,7],[5,7]],
+    [[7,1],[7,2],[7,3],[7,4],[7,5]],
+    [[13,7],[12,7],[11,7],[10,7],[9,7]],
+    [[7,13],[7,12],[7,11],[7,10],[7,9]]
+  ];
+  var START = [0, 13, 26, 39];
+  var STARS = [8, 21, 34, 47];
+  var SAFE = {};
+  START.concat(STARS).forEach(function (i) { SAFE[i] = true; });
+  var YARD_ORIGIN = [[0,0],[9,0],[9,9],[0,9]];
+  var YS = [[2,2],[4,2],[2,4],[4,4]];
+  var FIN = [[6.95,7.5],[7.5,6.95],[8.05,7.5],[7.5,8.05]];
+
+  function starPoints(cx, cy, R, r) {
+    var pts = [];
+    for (var i = 0; i < 10; i++) {
+      var a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r : R;
+      pts.push((cx + rad * Math.cos(a)).toFixed(3) + ',' + (cy + rad * Math.sin(a)).toFixed(3));
+    }
+    return pts.join(' ');
+  }
+
+  var svg = $('#board');
+  var yardEls = [], glowEls = [];
+  var c, k, i;
+  for (c = 0; c < 4; c++) {
+    var yg = S('g', { 'class': 'yard' }, svg);
+    var o = YARD_ORIGIN[c];
+    S('rect', { x: o[0], y: o[1], width: 6, height: 6, fill: 'var(--c' + c + ')' }, yg);
+    S('rect', { x: o[0] + 1, y: o[1] + 1, width: 4, height: 4, rx: 0.5, fill: 'var(--yard)' }, yg);
+    glowEls[c] = S('rect', { 'class': 'glow', x: o[0] + 1, y: o[1] + 1, width: 4, height: 4, rx: 0.5, fill: 'var(--c' + c + ')' }, yg);
+    for (k = 0; k < 4; k++) {
+      S('circle', { cx: o[0] + YS[k][0], cy: o[1] + YS[k][1], r: 0.58, fill: 'var(--c' + c + ')', 'fill-opacity': 0.22 }, yg);
+    }
+    yardEls[c] = yg;
+  }
+  TRACK.forEach(function (t, idx) {
+    var fill = 'var(--cell)';
+    START.forEach(function (s, ci) { if (idx === s) fill = 'var(--c' + ci + ')'; });
+    S('rect', { x: t[0], y: t[1], width: 1, height: 1, fill: fill, stroke: 'var(--cell-line)', 'stroke-width': 0.05 }, svg);
+  });
+  HOMECOL.forEach(function (cells, ci) {
+    cells.forEach(function (t) {
+      S('rect', { x: t[0], y: t[1], width: 1, height: 1, fill: 'var(--c' + ci + ')', 'fill-opacity': 0.92, stroke: 'var(--cell-line)', 'stroke-width': 0.05 }, svg);
+    });
+  });
+  var CEN = [
+    '6,6 6,9 7.5,7.5', '6,6 9,6 7.5,7.5', '9,6 9,9 7.5,7.5', '6,9 9,9 7.5,7.5'
+  ];
+  CEN.forEach(function (pts, ci) {
+    S('polygon', { points: pts, fill: 'var(--c' + ci + ')', stroke: 'var(--cell-line)', 'stroke-width': 0.05 }, svg);
+  });
+  STARS.forEach(function (idx) {
+    var t = TRACK[idx];
+    S('polygon', { points: starPoints(t[0] + 0.5, t[1] + 0.5, 0.34, 0.15), fill: 'var(--star)' }, svg);
+  });
+  START.forEach(function (idx) {
+    var t = TRACK[idx];
+    S('circle', { cx: t[0] + 0.5, cy: t[1] + 0.5, r: 0.17, fill: '#fff', 'fill-opacity': 0.75 }, svg);
+  });
+
+  var layer = S('g', { id: 'tokens', 'class': 'nt' }, svg);
+  var T = [];
+  for (c = 0; c < 4; c++) {
+    T[c] = [];
+    for (k = 0; k < 4; k++) {
+      (function (c, k) {
+        var g = S('g', { 'class': 'tok' }, layer);
+        S('circle', { 'class': 'hit', r: 0.55, fill: 'transparent' }, g);
+        var body = S('g', { 'class': 'body' }, g);
+        S('circle', { 'class': 'ring', r: 0.52, fill: 'none', stroke: 'var(--ring)', 'stroke-width': 0.09 }, body);
+        S('circle', { r: 0.37, fill: 'var(--c' + c + ')', stroke: 'var(--tok-edge)', 'stroke-width': 0.07 }, body);
+        S('circle', { cx: -0.11, cy: -0.12, r: 0.12, fill: '#fff', 'fill-opacity': 0.55 }, body);
+        g.addEventListener('click', function () { pick(c, k); });
+        g.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c, k); }
+        });
+        T[c][k] = { g: g, body: body };
+      })(c, k);
+    }
+  }
+
+  /* ---------- state ---------- */
+  var G = null, lastCfg = null, gidCounter = 0;
+  var IDLE = [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]];
+  var cur = function () { return G.seats[G.turn]; };
+  var isCPU = function (c) { return G.cfg[c] === 'cpu'; };
+
+  function basePos(c, p, k) {
+    if (p < 0) { var o = YARD_ORIGIN[c], s = YS[k]; return [o[0] + s[0], o[1] + s[1]]; }
+    if (p <= 50) { var t = TRACK[(START[c] + p) % 52]; return [t[0] + 0.5, t[1] + 0.5]; }
+    if (p <= 55) { var h = HOMECOL[c][p - 51]; return [h[0] + 0.5, h[1] + 0.5]; }
+    var b = FIN[c], off = (k - 1.5) * 0.2;
+    return c % 2 === 0 ? [b[0], b[1] + off] : [b[0] + off, b[1]];
+  }
+
+  function layout() {
+    var st = G ? G.tokens : IDLE;
+    var seats = G ? G.seats : [0, 1, 2, 3];
+    var groups = {}, c, k;
+    for (c = 0; c < 4; c++) for (k = 0; k < 4; k++) {
+      var p0 = st[c][k];
+      if (p0 >= 0 && p0 < 56) {
+        var bp = basePos(c, p0, k), key = bp[0] + ',' + bp[1];
+        (groups[key] = groups[key] || []).push(c * 4 + k);
+      }
+    }
+    for (c = 0; c < 4; c++) for (k = 0; k < 4; k++) {
+      var t = T[c][k], p = st[c][k];
+      t.g.style.display = seats.indexOf(c) >= 0 ? '' : 'none';
+      var pos = basePos(c, p, k), x = pos[0], y = pos[1], s = p === 56 ? 0.55 : 1;
+      if (p >= 0 && p < 56) {
+        var grp = groups[x + ',' + y];
+        if (grp.length > 1) {
+          var idx = grp.indexOf(c * 4 + k);
+          var a = 2 * Math.PI * idx / grp.length - Math.PI / 2;
+          x += Math.cos(a) * 0.21; y += Math.sin(a) * 0.21; s = 0.64;
+        }
+      }
+      t.g.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+      t.body.style.transform = 'scale(' + s + ')';
+    }
+  }
+
+  function noTransition() {
+    layer.setAttribute('class', 'nt');
+    layout();
+    void svg.getBoundingClientRect();
+    requestAnimationFrame(function () { requestAnimationFrame(function () { layer.setAttribute('class', ''); }); });
+  }
+
+  /* ---------- die ---------- */
+  var dieEl = $('#die'), pips = dieEl.querySelectorAll('i');
+  var PIPMAP = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+  function setDie(v) {
+    var on = PIPMAP[v || 1];
+    for (var i = 0; i < 9; i++) pips[i].className = on.indexOf(i) >= 0 ? 'on' : '';
+    dieEl.classList.toggle('idle', !v);
+    if (v) dieEl.setAttribute('aria-label', 'Die shows ' + v);
+  }
+  async function animateDie(gid) {
+    dieEl.classList.add('rolling');
+    var n = reduce ? 2 : 7;
+    for (var i = 0; i < n; i++) {
+      setDie(1 + Math.floor(Math.random() * 6));
+      await sleep(reduce ? 60 : 85);
+      if (!G || G.id !== gid) { dieEl.classList.remove('rolling'); return false; }
+    }
+    dieEl.classList.remove('rolling');
+    return true;
+  }
+
+  /* ---------- rules ---------- */
+  function legalMoves(c, d) {
+    var r = [];
+    G.tokens[c].forEach(function (p, k) {
+      if (p === -1) { if (d === 6) r.push(k); }
+      else if (p < 56 && p + d <= 56) r.push(k);
+    });
+    return r;
+  }
+  function enemyAt(c, idx) {
+    return G.seats.some(function (o) {
+      return o !== c && G.tokens[o].some(function (q) { return q >= 0 && q <= 50 && (START[o] + q) % 52 === idx; });
+    });
+  }
+  function threatened(c, idx) {
+    if (SAFE[idx]) return false;
+    return G.seats.some(function (o) {
+      return o !== c && G.tokens[o].some(function (q) {
+        if (q < 0 || q > 50) return false;
+        var dist = (idx - (START[o] + q) % 52 + 52) % 52;
+        return dist >= 1 && dist <= 6;
+      });
+    });
+  }
+  function cpuPick(c, d, legal) {
+    var best = legal[0], bs = -1e9;
+    legal.forEach(function (k) {
+      var p = G.tokens[c][k], np = p < 0 ? 0 : p + d, s = Math.random() * 4;
+      if (np === 56) s += 100;
+      if (np <= 50) {
+        var idx = (START[c] + np) % 52;
+        if (!SAFE[idx] && enemyAt(c, idx)) s += 80;
+        if (SAFE[idx]) s += 22; else if (threatened(c, idx)) s -= 25;
+      } else if (np < 56) s += 18;
+      if (p < 0) s += 40;
+      if (p >= 0 && p <= 50 && threatened(c, (START[c] + p) % 52)) s += 30;
+      s += np * 0.35;
+      if (s > bs) { bs = s; best = k; }
+    });
+    return best;
+  }
+
+  /* ---------- ui ---------- */
+  var panel = $('#panel'), statusEl = $('#status'), plist = $('#plist'), logEl = $('#log');
+  var rollBtn = $('#rollBtn'), chipDot = $('#chipDot'), turnName = $('#turnName');
+  function setStatus(t) { statusEl.textContent = t; }
+  function log(msg, c) {
+    G.log.unshift({ m: msg, c: c });
+    if (G.log.length > 5) G.log.pop();
+  }
+  function ui() {
+    var c, k;
+    for (c = 0; c < 4; c++) {
+      yardEls[c].classList.toggle('off', !!G && G.seats.indexOf(c) < 0);
+      glowEls[c].classList.toggle('on', !!G && !G.over && G.seats[G.turn] === c);
+    }
+    if (!G) return;
+    c = cur();
+    panel.style.setProperty('--cur', 'var(--c' + c + ')');
+    turnName.textContent = G.over ? NAMES[c] + ' wins' : NAMES[c] + "'s turn";
+    plist.innerHTML = G.seats.map(function (s) {
+      var home = G.tokens[s].filter(function (p) { return p === 56; }).length;
+      var on = !G.over && s === c;
+      return '<li class="p' + (on ? ' on' : '') + '" style="--pc:var(--c' + s + ')"' + (on ? ' aria-current="true"' : '') + '>' +
+        '<span class="dot"></span><span class="pn">' + NAMES[s] + '<small>' + (G.cfg[s] === 'cpu' ? 'CPU' : 'Human') + '</small></span>' +
+        '<span class="home" role="img" aria-label="' + home + ' of 4 home">' +
+        [0, 1, 2, 3].map(function (n) { return '<i class="' + (n < home ? 'f' : '') + '"></i>'; }).join('') + '</span></li>';
+    }).join('');
+    logEl.innerHTML = G.log.map(function (l) {
+      return '<li><span class="ld"' + (l.c !== undefined ? ' style="--pc:var(--c' + l.c + ')"' : '') + '></span><span>' + l.m + '</span></li>';
+    }).join('');
+    var human = !isCPU(c);
+    var can = !G.over && human && G.phase === 'roll' && !G.busy;
+    rollBtn.disabled = !can;
+    dieEl.disabled = !can;
+    rollBtn.textContent = G.over ? 'Game over'
+      : !human ? NAMES[c] + ' is playing'
+      : G.phase === 'move' ? 'Pick a token'
+      : G.phase === 'anim' ? 'Moving…'
+      : G.busy ? 'Rolling…' : 'Roll the die';
+  }
+  function clearMarks() {
+    for (var c = 0; c < 4; c++) for (var k = 0; k < 4; k++) {
+      var g = T[c][k].g;
+      g.classList.remove('can');
+      g.removeAttribute('tabindex');
+      g.removeAttribute('role');
+      g.removeAttribute('aria-label');
+    }
+  }
+  function mark(c, ks) {
+    clearMarks();
+    ks.forEach(function (k) {
+      var g = T[c][k].g;
+      layer.appendChild(g);
+      void g.getBoundingClientRect();
+      g.classList.add('can');
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', NAMES[c] + ' token ' + (k + 1));
+    });
+  }
+
+  /* ---------- game flow ---------- */
+  function startGame(cfg) {
+    lastCfg = cfg.slice();
+    try { localStorage.setItem('ludo-by-sahil-cfg', JSON.stringify(cfg)); } catch (e) {}
+    var seats = [0, 1, 2, 3].filter(function (c) { return cfg[c] !== 'off'; });
+    G = {
+      id: ++gidCounter, cfg: cfg.slice(), seats: seats, turn: 0, die: null, phase: 'roll',
+      busy: false, over: false, sixes: 0, legal: [],
+      tokens: [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]],
+      log: [], rolls: [0, 0, 0, 0]
+    };
+    clearMarks();
+    noTransition();
+    setDie(null);
+    $('#setup').hidden = true;
+    $('#win').hidden = true;
+    log('Game on. ' + NAMES[cur()] + ' starts.', cur());
+    beginTurn(false);
+  }
+  function beginTurn(bonus) {
+    var c = cur(), gid = G.id;
+    G.phase = 'roll'; G.busy = false; G.legal = [];
+    if (bonus) log(NAMES[c] + ' rolls again.', c);
+    setStatus(isCPU(c) ? NAMES[c] + ' is up.' : (bonus ? NAMES[c] + ', roll again.' : NAMES[c] + ', roll the die.'));
+    ui();
+    if (isCPU(c)) {
+      setTimeout(function () { if (G && G.id === gid && !G.over) roll(); }, 800);
+    }
+  }
+  function endTurn(bonus) {
+    if (G.over) return;
+    clearMarks();
+    if (!bonus) { G.sixes = 0; G.turn = (G.turn + 1) % G.seats.length; }
+    beginTurn(bonus);
+  }
+  async function roll() {
+    if (!G || G.over || G.busy || G.phase !== 'roll') return;
+    var gid = G.id, c = cur();
+    G.busy = true; ui();
+    setStatus(NAMES[c] + ' is rolling…');
+    var ok = await animateDie(gid);
+    if (!ok || G.id !== gid) return;
+    var d = 1 + Math.floor(Math.random() * 6);
+    G.die = d; setDie(d); G.rolls[c]++;
+    if (d === 6) G.sixes++; else G.sixes = 0;
+    if (G.sixes === 3) {
+      log(NAMES[c] + ' rolled three sixes in a row. Turn lost.', c);
+      setStatus('Three sixes in a row. ' + NAMES[c] + ' loses the turn.');
+      ui();
+      await sleep(1100); if (G.id !== gid) return;
+      endTurn(false); return;
+    }
+    var legal = legalMoves(c, d);
+    if (!legal.length) {
+      log(NAMES[c] + ' rolled ' + d + '. No move.', c);
+      setStatus(NAMES[c] + ' rolled ' + d + '. No move available.');
+      ui();
+      await sleep(1000); if (G.id !== gid) return;
+      endTurn(false); return;
+    }
+    G.legal = legal; G.phase = 'move';
+    if (isCPU(c)) {
+      setStatus(NAMES[c] + ' rolled ' + d + '.'); ui();
+      await sleep(650); if (G.id !== gid) return;
+      var kk = cpuPick(c, d, legal);
+      mark(c, [kk]);
+      await sleep(380); if (G.id !== gid) return;
+      doMove(c, kk);
+    } else if (legal.length === 1) {
+      setStatus(NAMES[c] + ' rolled ' + d + '.'); mark(c, legal); ui();
+      await sleep(450); if (G.id !== gid) return;
+      doMove(c, legal[0]);
+    } else {
+      G.busy = false;
+      mark(c, legal);
+      setStatus(NAMES[c] + ' rolled ' + d + '. Tap a glowing token.');
+      ui();
+    }
+  }
+  function pick(c, k) {
+    if (!G || G.over || G.busy || G.phase !== 'move') return;
+    if (c !== cur() || isCPU(c) || G.legal.indexOf(k) < 0) return;
+    doMove(c, k);
+  }
+  async function doMove(c, k) {
+    var gid = G.id, d = G.die;
+    G.busy = true; G.phase = 'anim'; clearMarks();
+    var el = T[c][k].g;
+    layer.appendChild(el); void el.getBoundingClientRect();
+    var bonus = d === 6, captured = 0, p = G.tokens[c][k], i;
+    ui();
+    if (p === -1) {
+      G.tokens[c][k] = 0; layout();
+      await sleep(280); if (G.id !== gid) return;
+      log(NAMES[c] + ' brings a token out.', c);
+    } else {
+      for (i = 0; i < d; i++) {
+        G.tokens[c][k] = ++p; layout();
+        await sleep(135); if (G.id !== gid) return;
+      }
+    }
+    p = G.tokens[c][k];
+    if (p <= 50) {
+      var idx = (START[c] + p) % 52;
+      if (!SAFE[idx]) {
+        G.seats.forEach(function (o) {
+          if (o === c) return;
+          G.tokens[o].forEach(function (q, j) {
+            if (q >= 0 && q <= 50 && (START[o] + q) % 52 === idx) {
+              G.tokens[o][j] = -1; captured++;
+              T[o][j].g.classList.add('back');
+              (function (node) { setTimeout(function () { node.classList.remove('back'); }, 700); })(T[o][j].g);
+              log(NAMES[c] + ' captures a ' + NAMES[o] + ' token.', c);
+            }
+          });
+        });
+      }
+    }
+    if (captured) {
+      bonus = true; layout();
+      setStatus(NAMES[c] + ' captures ' + captured + (captured > 1 ? ' tokens!' : ' token!'));
+      await sleep(600); if (G.id !== gid) return;
+    }
+    if (p === 56) {
+      bonus = true;
+      log(NAMES[c] + ' gets a token home.', c);
+    }
+    if (G.tokens[c].every(function (q) { return q === 56; })) { win(c); return; }
+    endTurn(bonus);
+  }
+  function win(c) {
+    var gid = G.id;
+    G.over = true; clearMarks();
+    log(NAMES[c] + ' wins the game.', c);
+    setStatus(NAMES[c] + ' wins!');
+    ui();
+    setTimeout(function () {
+      if (!G || G.id !== gid) return;
+      $('#winSheet').style.setProperty('--pc', 'var(--c' + c + ')');
+      $('#winTitle').textContent = NAMES[c] + ' wins';
+      $('#winText').textContent = 'All four tokens are home after ' + G.rolls[c] + ' rolls.';
+      $('#win').hidden = false;
+      $('#againBtn').focus();
+    }, 900);
+  }
+
+  /* ---------- setup ---------- */
+  var SEAT_OPTS = [['off', 'Off'], ['human', 'Human'], ['cpu', 'CPU']];
+  var PRESETS = [
+    ['You vs CPU', ['human', 'off', 'cpu', 'off']],
+    ['You vs 3 CPUs', ['human', 'cpu', 'cpu', 'cpu']],
+    ['2 friends', ['human', 'off', 'human', 'off']],
+    ['4 friends', ['human', 'human', 'human', 'human']]
+  ];
+  $('#seats').innerHTML = [0, 1, 2, 3].map(function (c) {
+    return '<div class="seat" role="radiogroup" aria-label="' + NAMES[c] + '" style="--pc:var(--c' + c + ')">' +
+      '<span class="sw"></span><span class="sn">' + NAMES[c] + '</span><div class="seg">' +
+      SEAT_OPTS.map(function (o) {
+        return '<label><input type="radio" name="seat' + c + '" value="' + o[0] + '" id="s' + c + o[0] + '"><span>' + o[1] + '</span></label>';
+      }).join('') + '</div></div>';
+  }).join('');
+  $('#presets').innerHTML = PRESETS.map(function (p, n) {
+    return '<button class="chip" type="button" data-p="' + n + '">' + p[0] + '</button>';
+  }).join('');
+  function getCfg() {
+    return [0, 1, 2, 3].map(function (c) { return document.querySelector('input[name=seat' + c + ']:checked').value; });
+  }
+  function setCfg(cfg) {
+    cfg.forEach(function (v, c) { document.getElementById('s' + c + v).checked = true; });
+    validate();
+  }
+  function validate() {
+    var n = getCfg().filter(function (v) { return v !== 'off'; }).length;
+    $('#startBtn').disabled = n < 2;
+    $('#err').textContent = n < 2 ? 'Choose at least two players.' : '';
+  }
+  function openSetup() {
+    $('#resumeBtn').hidden = !(G && !G.over);
+    $('#win').hidden = true;
+    $('#setup').hidden = false;
+    $('#startBtn').focus();
+  }
+  var saved = ['human', 'cpu', 'cpu', 'cpu'];
+  try {
+    var raw = JSON.parse(localStorage.getItem('ludo-by-sahil-cfg') || 'null');
+    if (Array.isArray(raw) && raw.length === 4 && raw.every(function (v) { return v === 'off' || v === 'human' || v === 'cpu'; })) saved = raw;
+  } catch (e) {}
+  setCfg(saved);
+
+  $('#seats').addEventListener('change', validate);
+  $('#presets').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-p]');
+    if (b) setCfg(PRESETS[+b.getAttribute('data-p')][1]);
+  });
+  $('#startBtn').addEventListener('click', function () { startGame(getCfg()); });
+  $('#resumeBtn').addEventListener('click', function () { $('#setup').hidden = true; });
+  $('#newBtn').addEventListener('click', openSetup);
+  $('#againBtn').addEventListener('click', function () { startGame(lastCfg || getCfg()); });
+  $('#changeBtn').addEventListener('click', openSetup);
+
+  function humanRoll() { if (G && !isCPU(cur())) roll(); }
+  rollBtn.addEventListener('click', humanRoll);
+  dieEl.addEventListener('click', humanRoll);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !$('#setup').hidden && G && !G.over) { $('#setup').hidden = true; }
+    if (e.code === 'Space' && document.activeElement === document.body && $('#setup').hidden && $('#win').hidden) {
+      e.preventDefault(); humanRoll();
+    }
+  });
+
+  /* ---------- boot ---------- */
+  setDie(null);
+  noTransition();
+  ui();
+})();
+</script>
+
+</body></html>
